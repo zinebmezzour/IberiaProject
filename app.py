@@ -27,9 +27,13 @@ df = pd.read_sql_query('select * from "App";', conn)
 
 app = dash.Dash(__name__)
 
-app.layout = html.H1([
-    html.H1('Ibe App')])
+app.layout = html.Div(children=[
         
+    html.H1(children='Ibe-App'),
+    
+    html.Div(children = 'Welcome !')])
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
