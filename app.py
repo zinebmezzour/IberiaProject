@@ -37,6 +37,8 @@ c_df['year'] = pd.DatetimeIndex(c_df['CreationDate']).year
 c_df['month'] = pd.DatetimeIndex(c_df['CreationDate']).month
 
 
+
+
 domain_options=dff["Domain"].unique()
 months_options=dff["month"].unique()
 
@@ -85,7 +87,7 @@ html.Div([
             dcc.Tab(label="General Overview", value="general_tab"),
             dcc.Tab(label="Performance", value="performance_tab"),
         ],
-        value ="performance_tab"
+        value ="general_tab"
     )
     ],
     className ="row tabs_div"
@@ -238,6 +240,7 @@ def graph_3(input,other):
     ])
 
 def graph_2(input):
+
     filtered_df = dff[dff['year'] == input]
     prio=filtered_df['Priority'].unique()
     
@@ -262,6 +265,7 @@ def graph_2(input):
             barmode="group",
             legend={'x': 0, 'y': 1},
             hovermode='closest',
+
         )}
 
 
@@ -318,7 +322,206 @@ def graph_maker1(input1):
 
 #PERFORMANCE LAYOUT
 performance_layout = html.Div([
-    html.H2("Overview App")])
+        html.H2("Overview App"),
+
+            html.Div([
+    
+    
+                html.Div([ 
+                    html.H3('Graph1'),
+                    
+                    html.Div([
+                        dcc.Dropdown(
+                        id='dropdown-11',
+                        options=[{'label': i, 'value': i} for i in dff['year'].unique()],
+                        value=2018
+                        )
+                    ]),
+
+                    dcc.Graph(id='graph11'),
+                        ],
+                    className='six columns'),
+
+
+                html.Div([
+    
+                        html.H3('Graph2'), 
+
+
+                        html.Div([
+                        dcc.Dropdown(
+                        id='dropdown-22',
+                        options=[{'label': i, 'value': i} for i in dff['year'].unique()],
+                        value=2018
+                        )
+                            ]),
+
+                        dcc.Graph(id='graph22'),
+                            ],
+                        className="six columns"
+                            ),
+                    
+            ],
+            className="row"),
+
+
+            html.Div([
+                html.H3('Graph3'),
+
+                html.Div([
+                    dcc.Dropdown(
+                    id='dropdown-33',
+                    options=[{'label': i, 'value': i} for i in c_domain_options],
+                    value='AIRPORTS'
+                    )
+                ]),
+
+                html.Div([
+                    dcc.Dropdown(
+                    id='dropdown-44',
+                    options=[{'label': i, 'value': i} for i in c_months_options],
+                    value=1
+                    )
+                ]),
+
+
+                dcc.Graph(id='graph33'),
+            
+            ],
+            className='row'),
+
+],
+
+)
+
+
+@app.callback(
+    Output('graph33', 'figure'),
+    [Input('dropdown-33', 'value'),
+     Input('dropdown-44','value')
+    ])
+
+def graph_33(input,other):
+    print(input)
+    print(other)
+    fil= c_df[(c_df['Domain'] == input) & (c_df['month'] == other)]
+    
+ #   prio=filtered_df['Priority'].unique()
+    domain = fil['Domain'].unique()
+
+
+    
+    traces = []
+
+    for i in domain:
+        
+        app = fil[fil['Domain']==i].groupby('Application').size()
+        nb_app = fil[fil['Domain']==i]['Application'].unique()
+
+        traces.append(go.Bar(
+            x=nb_app,
+            y=app,
+            name=i,
+
+        ))
+    return {
+        'data': traces,
+        'layout': go.Layout(
+            xaxis={'type':'category', 'title': input},
+            yaxis={'title': 'Number of Incidents'},
+            barmode="group",
+            legend={'x': 0, 'y': 1},
+            hovermode='closest',
+        )}
+
+
+
+
+@app.callback(
+    Output('graph22', 'figure'),
+    [Input('dropdown-22', 'value') 
+    ])
+
+def graph_22(input):
+    filtered_df = dff[dff['year'] == input]
+    prio=filtered_df['Priority'].unique()
+    
+    traces = []
+
+    for i in prio:
+        
+        incidents =filtered_df[filtered_df['Priority']==i].groupby('month').size()
+        months=filtered_df[filtered_df['Priority']==i]['month'].unique()
+
+        traces.append(go.Bar(
+            x=months,
+            y=incidents,
+            name=i,
+
+        ))
+    return {
+        'data': traces,
+        'layout': go.Layout(
+            xaxis={'type':'category', 'title': 'Month'},
+            yaxis={'title': 'Number of Incidents'},
+            barmode="group",
+            legend={'x': 0, 'y': 1},
+            hovermode='closest',
+        )}
+
+
+@app.callback(
+    Output('graph11', 'figure'),
+    [Input('dropdown-11', 'value') 
+    ])
+
+def graph_maker11(input1):
+    
+    filtered_df = dff[dff['year'] == input1]
+    
+    prio=filtered_df['Priority'].unique()
+    
+    traces = []
+    
+    for i in prio:
+        
+        incidents =filtered_df[filtered_df['Priority']==i].groupby('CreationDate').size()
+        months=filtered_df[filtered_df['Priority']==i]['month'].unique()
+
+#        days=filtered_df[filtered_df['Priority']==i]['CreationDate'].unique()
+
+        print(months)
+
+        traces.append(go.Scatter(
+#            x=days
+            x=months,
+            y=incidents,
+            text=prio,
+            mode='lines+markers',
+            opacity=0.7,
+            marker={
+                'size': 15,
+                'line': {'width': 0.5, 'color': 'red'}
+            },
+            name= i
+        ))
+
+    return {
+        'data': traces,
+        'layout': go.Layout(
+            xaxis={'type': 'category', 'title': 'Months'},
+            yaxis={'title': 'Incidents'},
+            margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            legend={'x': 0, 'y': 1},
+            hovermode='closest'
+        )
+    }
+    
+    
+    
+    
+    
+    
    
 
 
