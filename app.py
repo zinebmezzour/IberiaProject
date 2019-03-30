@@ -137,7 +137,7 @@ html.Div([
         style={"height":"20","verticalAlign":"middle"},
         children=[
             dcc.Tab(label="General Overview", value="general_tab"),
-            dcc.Tab(label="Performance", value="performance_tab"),
+            dcc.Tab(label="Critical Services' Performance", value="performance_tab"),
         ],
         value ="general_tab"
     )
@@ -184,23 +184,68 @@ def render_content(tab):
         return general_layout
 
 
+def graph_2():
+
+    filtered_df = jf_df[jf_df['year'] == 2018]
+    prio=filtered_df['Priority'].unique()
+    
+    traces = []
+
+    for i in prio:
+        
+        incidents =filtered_df[filtered_df['Priority']==i].groupby('month').size()
+        months=filtered_df[filtered_df['Priority']==i]['month'].unique()
+
+        traces.append(go.Bar(
+            x=months,
+            y=incidents,
+            name=i,
+            text=incidents,
+            textposition='auto',
+            marker=go.bar.Marker(
+                                opacity=0.6
+                                ),
+
+        ))
+    return {
+        'data': traces,
+        'layout': go.Layout(
+            
+            xaxis={'type':'category', 'title': 'Month'},
+            yaxis={'title': 'Number of Incidents'},
+            barmode="group",
+            legend={'x': 1, 'y': 1},
+            hovermode='closest',
+            margin=go.layout.Margin(l=60, r=40, t=40, b=100),
+
+        )}
 
 #GENERAL LAYOUT
 
 
 general_layout = html.Div([
+
+
+    html.Div([
+        dcc.Dropdown(
+            id='dropdown-1',
+            options=[{'label': 'January', 'value': 'January'},{'label': 'February', 'value': 'February'}],
+            value='January'
+                )
+
+    ]),
     
     html.Div([
         html.Div([ 
-        indicator('blue','my first indicator','indicator1'),
+        indicator('blue','Total Number of Incidences Raised','indicator1'),
         ]),
 
         html.Div([ 
-        indicator('blue','my second indicator','indicator2'),
+        indicator('blue','Total Number of Incidences in Critical Services','indicator2'),
         ]),
         
         html.Div([ 
-        indicator('blue','my third indicator','indicator3'),
+        indicator('blue','Total Number of Severity 1','indicator3'),
         ]),
 
 
@@ -210,81 +255,245 @@ general_layout = html.Div([
 
         html.Div([ 
 
+
+
+            html.Div([ 
+                html.H4('Total Incidents Raised per Severity'),
+
+
+                dcc.Graph(
+                    figure=go.Figure(graph_2()), 
+            
+                    id='graph1'),
+
+                
+
+            ], className='six columns'),
+
             html.Div([
-                dcc.Dropdown(
-                id='dropdown-1',
-                options=[{'label': i, 'value': i} for i in dff['year'].unique()],
-                value=2018
-                )
-            ]),
+                html.H4('Total Incidents Raised per Critical Services'),
 
 
-            dcc.Graph(id='graph1'),
-        ], className='six columns'),
+                dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                         go.Bar(
+                            x= ['.COM', 'BOOKINGS & INVENTORY SYS', 'CHECK IN SYS',
+       'CREW MNGT', 'FLIGHT DISPATCHING',
+       'FLIGHT TRACKING & CONTROL', 'LOAD PLAN',
+       'MAD-HUB OPERATIONAL MNGT SYS', 'MRO SAP',
+       'STATIONS OPERATIONAL MNGT SYS', 'TICKETING SYS'],
+                            y= [147, 52, 111, 30, 11, 54, 10, 84, 187, 146, 80],
+                            name='January',
+                            text=[147, 52, 111, 30, 11, 54, 10, 84, 187, 146, 80],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(55, 83, 109)'
+                                    )
+                     ),
+                        go.Bar(
+                            x= ['.COM', 'BOOKINGS & INVENTORY SYS', 'CHECK IN SYS',
+       'CREW MNGT', 'FLIGHT DISPATCHING',
+       'FLIGHT TRACKING & CONTROL', 'LOAD PLAN',
+       'MAD-HUB OPERATIONAL MNGT SYS', 'MRO SAP',
+       'STATIONS OPERATIONAL MNGT SYS', 'TICKETING SYS'],
+                            y= [195, 49, 121, 32, 13, 53, 16, 71, 152, 111, 66],
+                            name='February',
+                            text=[195, 49, 121, 32, 13, 53, 16, 71, 152, 111, 66],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(26, 118, 255)',
+                                opacity=0.6
+                                )
+                            )
+                            ],
+                            layout=go.Layout(
+                                title = 'All Severities',
+                                showlegend=True,
+        
+                                legend=go.layout.Legend(
+                                    x=1.0,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                       
+                        id='graph2'
+                    )
+                    
 
-        html.Div([ 
+            ], className='six columns'),
+
+        ], className='row'),
 
 
-            html.Div([
-                dcc.Dropdown(
-                id='dropdown-2',
-                options=[{'label': i, 'value': i} for i in dff['year'].unique()],
-                value=2018
-                )
-            ]),
-
-            dcc.Graph(id='graph2'),
-
-        ], className='six columns'),
-
-    ], className='row'),
+       html.Div([ 
 
 
-    html.Div([
-        dcc.Dropdown(
-        id='dropdown-3',
-        options=[{'label': i, 'value': i} for i in c_domain_options],
-        value='AIRPORTS'
-        )
-    ]),
+       html.Div([
+                html.H4('Raised/Closed/Backlog per Month'),
+           dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                         go.Bar(
+                            x= ['Raised','Closed','Backlog'],
+                            y= [10035,9916,1031],
+                            name='January',
+                            text=[10035,9916,1031],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(55, 83, 109)'
+                                    )
+                     ),
+                        go.Bar(
+                            x= ['Raised','Closed','Backlog'],
+                            y= [8836,8012,1152],
+                            name='February',
+                            text= [8836,8012,1152],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(26, 118, 255)',
+                                opacity=0.6
+                                ),
+                            )
+                            ],
+                            layout=go.Layout(
+                                title = 'All Severities',
+                                showlegend=True,
+                                yaxis={'title': 'Number of Incidents'},
+                               
+                                legend=go.layout.Legend(
+                                    x=1,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                        style={'height': 500},
+                        id='availability_graph'
+                    )
+               ],
+            className='six columns'),
 
-    html.Div([
-        dcc.Dropdown(
-        id='dropdown-4',
-        options=[{'label': i, 'value': i} for i in c_months_options],
-        value=1
-        )
-    ]),
 
 
-    dcc.Graph(id='graph3'),
+
+       html.Div([
+                html.H4('Password Related Incidents per Month'),
+           dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                         go.Bar(
+                            x= ['Password Related','Non-Password Related'],
+                            y= [3918,6117],
+                            name='January',
+                            text=[3918,6117],
+                            textposition = 'auto',
+                            marker=dict(
+                                color='rgb(26, 118, 255)',
+                            
+                            ),
+                            opacity=0.6
+                     ),
+                        go.Bar(
+                            x= ['Password Related','Non-Password Related'],
+                            y= [3279,5557],
+                            name='February',
+                            text= [3279,5557],
+                            textposition = 'auto',
+                            marker=dict(
+                                color='rgb(255, 150, 38)',
+                            
+                            ),
+                            opacity=0.6
+
+
+                           
+                            )
+                            ],
+                            layout=go.Layout(
+                            
+                                showlegend=True,
+                                yaxis={'title': 'Number of Incidents'},
+                               
+                                legend=go.layout.Legend(
+                                    x=1,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                        style={'height': 500},
+                        id='Password_graph'
+                    )
+               ],
+            className='six columns'),
+
+
+
+
+
+
+
+            ], className='row') 
 
 ],
 className= 'twelve columns'
-)
+),
 
+])
 
-   
 @app.callback(
-    Output("indicator1", "children"), [Input('dropdown-3', 'value')]
+    Output("indicator1", "children"), [Input('dropdown-1', 'value')]
 )
-def middle_leads_indicator_callback(domain):
-    print(domain)
-    #df = pd.read_json(df, orient="split")
-    if domain == "All_Domains":
-        open_leads = len(
-        dff[
-            (dff["Priority"] == "Critical")
-        ].index
-    )
+
+def total_amount(input):
+    print(input)
+    if input == "January":
+        total_amount = "10'035"
+    if input == "February":
+        total_amount = "8'836"
+
     else:
-        open_leads = len(
-        dff[
-            (dff["Domain"] == domain)
-        ].index
-    )
+        total_amount = "10'035"
     
-    return open_leads
+    return total_amount
+
+
+@app.callback(
+    Output("indicator2", "children"), [Input('dropdown-1', 'value')]
+)
+
+def total_critical(input):
+    print(input)
+    if input == "January":
+        total_amount = '915'
+    if input == "February":
+        total_amount = '879'
+
+    else:
+        total_amount = '915'
+    
+    return total_amount
+
+@app.callback(
+    Output("indicator3", "children"), [Input('dropdown-1', 'value')]
+)
+
+def severity1(input):
+    print(input)
+    if input == "January":
+        total_amount = '10'
+    if input == "February":
+        total_amount = '18'
+
+    else:
+        total_amount = '10'
+    
+    return total_amount
+
+
 
 
 @app.callback(
@@ -322,95 +531,12 @@ def graph_3(input,other):
             xaxis={'type':'category', 'title': input},
             yaxis={'title': 'Number of Incidents'},
             barmode="group",
-            legend={'x': 0, 'y': 1},
+            legend={'x': 1, 'y': 1},
             hovermode='closest',
         )}
 
 
 
-
-@app.callback(
-    Output('graph2', 'figure'),
-    [Input('dropdown-2', 'value') 
-    ])
-
-def graph_2(input):
-
-    filtered_df = dff[dff['year'] == input]
-    prio=filtered_df['Priority'].unique()
-    
-    traces = []
-
-    for i in prio:
-        
-        incidents =filtered_df[filtered_df['Priority']==i].groupby('month').size()
-        months=filtered_df[filtered_df['Priority']==i]['month'].unique()
-
-        traces.append(go.Bar(
-            x=months,
-            y=incidents,
-            name=i,
-
-        ))
-    return {
-        'data': traces,
-        'layout': go.Layout(
-            xaxis={'type':'category', 'title': 'Month'},
-            yaxis={'title': 'Number of Incidents'},
-            barmode="group",
-            legend={'x': 0, 'y': 1},
-            hovermode='closest',
-
-        )}
-
-
-
-@app.callback(
-    Output('graph1', 'figure'),
-    [Input('dropdown-1', 'value') 
-    ])
-
-def graph_maker1(input1):
-    
-    filtered_df = dff[dff['year'] == input1]
-    
-    prio=filtered_df['Priority'].unique()
-    
-    traces = []
-    
-    for i in prio:
-        
-        incidents =filtered_df[filtered_df['Priority']==i].groupby('CreationDate').size()
-        months=filtered_df[filtered_df['Priority']==i]['month'].unique()
-
-#        days=filtered_df[filtered_df['Priority']==i]['CreationDate'].unique()
-
-        print(months)
-
-        traces.append(go.Scatter(
-#            x=days
-            x=months,
-            y=incidents,
-            text=prio,
-            mode='lines+markers',
-            opacity=0.7,
-            marker={
-                'size': 15,
-                'line': {'width': 0.5, 'color': 'red'}
-            },
-            name= i
-        ))
-
-    return {
-        'data': traces,
-        'layout': go.Layout(
-            xaxis={'type': 'category', 'title': 'Months'},
-            yaxis={'title': 'Incidents'},
-            margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
-            legend={'x': 0, 'y': 1},
-            hovermode='closest'
-        )
-    }
 
 
 #PERFORMANCE LAYOUT
@@ -476,7 +602,7 @@ performance_layout = html.Div([
                                 showlegend=True,
                                 yaxis={'title': '% Availability'},
                                 legend=go.layout.Legend(
-                                    x=0,
+                                    x=1,
                                     y=1.0
                                 ),
                                 margin=go.layout.Margin(l=60, r=40, t=40, b=100)
@@ -497,21 +623,24 @@ performance_layout = html.Div([
                     figure=go.Figure(
                     data=[
                          go.Bar(
-                            x= servRelial_df['Service'].unique().tolist(),
-                            y= servRelial_df['January'].tolist(),
+                            x= servRelial_df['January'].tolist(),
+                            y= servRelial_df['Service'].unique().tolist(),
                             name='January',
                             text=servRelial_df['January'].tolist(),
                             textposition = 'auto',
+                            orientation = 'h',
                             marker=go.bar.Marker(
-                            color='rgb(55, 83, 109)'
+                            color='rgb(55, 83, 109)',
+                            opacity=0.6
                                     )
                      ),
                         go.Bar(
-                            x= servRelial_df['Service'].unique().tolist(),
-                            y= servRelial_df['February'].tolist(),
+                            y= servRelial_df['Service'].unique().tolist(),
+                            x= servRelial_df['February'].tolist(),
                             name='February',
                             text=servRelial_df['February'].tolist(),
                             textposition = 'auto',
+                            orientation = 'h',
                             marker=go.bar.Marker(
                                 color='rgb(26, 118, 255)',
                                 opacity=0.6
@@ -521,12 +650,12 @@ performance_layout = html.Div([
                             layout=go.Layout(
                                 title = 'Severity 1 (High & Critical)',
                                 showlegend=True,
-                                yaxis={'title': 'Days between Failures'},
+                                xaxis={'title': 'Days between Failures'},
                                 legend=go.layout.Legend(
-                                    x=0,
+                                    x=1.0,
                                     y=1.0
                                 ),
-                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                                margin=go.layout.Margin(l=210, r=40, t=40, b=40)
                             )
                         ),
                         style={'height': 500},
@@ -554,7 +683,7 @@ performance_layout = html.Div([
                             text=MTTR_df['January'].tolist(),
                             textposition = 'auto',
                             marker=go.bar.Marker(
-                            color='rgb(55, 83, 109)'
+                            color='rgb(130, 157, 237)'
                                     )
                      ),
                         go.Bar(
@@ -564,7 +693,7 @@ performance_layout = html.Div([
                             text=MTTR_df['February'].tolist(),
                             textposition = 'auto',
                             marker=go.bar.Marker(
-                                color='rgb(26, 118, 255)',
+                                color='rgb(255, 150, 38)',
                                 opacity=0.6
                                 )
                             )
@@ -574,7 +703,7 @@ performance_layout = html.Div([
                                 showlegend=True,
                                 yaxis={'title': 'MTTR in hours'},
                                 legend=go.layout.Legend(
-                                    x=0,
+                                    x=1.0,
                                     y=1.0
                                 ),
                                 margin=go.layout.Margin(l=60, r=40, t=40, b=100)
