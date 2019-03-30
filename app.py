@@ -12,7 +12,6 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_auth
 import dash_html_components as html
-import dash_table
 from datetime import datetime as dt
 from datetime import date, timedelta
 import pandas as pd
@@ -773,7 +772,7 @@ def worst_MTTR(input):
         worst_service = 'FTC (1 day,3h)'
     
     return worst_service
-    
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
