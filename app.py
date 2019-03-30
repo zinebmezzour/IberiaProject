@@ -29,6 +29,7 @@ c_df=pd.read_sql_query('select * from "critic";', conn)
 jf_df=pd.read_sql_query('select * from "janfebraised";', conn)
 servAvail_df=pd.read_sql_query('select * from "ServAvailJF";', conn)
 servRelial_df=pd.read_sql_query('select * from "ServReliabilityJF";', conn)
+MTTR_df=pd.read_sql_query('select * from "MTTR_per_Service";', conn)
 
 
 
@@ -42,6 +43,8 @@ c_df['month'] = pd.DatetimeIndex(c_df['CreationDate']).month
 
 jf_df['year'] = pd.DatetimeIndex(jf_df['CreationDate']).year
 jf_df['month'] = pd.DatetimeIndex(jf_df['CreationDate']).month
+
+
 
 
 critical_services_options= servAvail_df['Service'].unique()
@@ -82,10 +85,14 @@ def indicator(color, text, id_value):
             ),
             html.P(
                 id = id_value,
-                className="indicator_value"
+                className="indicator_value",
+                style={'color': 'red','fontSize': 23, 'opacity':0.6}
+
             ),
+
         ],
         className="four columns indicator",
+        style={'height': 100}
         
     )
 
@@ -408,43 +415,29 @@ def graph_maker1(input1):
 
 #PERFORMANCE LAYOUT
 performance_layout = html.Div([
-        html.H2("Performance"),
 
-            html.Div([
-    
-                html.Div([ 
-                    
-                    
-                    html.Div([
-                        dcc.Dropdown(
-                        id='dropdown-11',
-                        options=[{'label': i, 'value': i} for i in dff['year'].unique()],
-                        value=2018
-                        )
-                    ], className='twelve columns'),
 
+                html.Div([
+                dcc.Dropdown(
+                id='dropdown-worst',
+                options=[{'label': 'January', 'value': 'January'},{'label': 'February', 'value': 'February'}],
+                value='January'
+                ),
 
                 html.Div([ 
+                indicator('blue','Worst Available Service','indicator11'),
+                ]),
 
-                    html.Div([
-                        html.H4('Graph1'),
-                        dcc.Graph(id='graph11')
-                    ], className='six columns'),
-
-                    html.Div([
-                        html.H4('Graph2'),
-                        dcc.Graph(id='graph22'),
-                        
-                    ], className="six columns")
-
-                ],className='row')
+                html.Div([ 
+                indicator('blue','Worst Reliable Service','indicator22'),
+                ]),
+                
+                html.Div([ 
+                indicator('blue','Worst MTTR','indicator33'),
+                ]),
 
 
-                        ],
-                    className='twelve columns'),    
-       
-            ],
-            className="row"),
+            ], className='row'),
 
 
 
@@ -460,6 +453,8 @@ performance_layout = html.Div([
                             x= servAvail_df['Service'].unique().tolist(),
                             y= servAvail_df['January'].tolist(),
                             name='January',
+                            text=servAvail_df['January'].tolist(),
+                            textposition = 'auto',
                             marker=go.bar.Marker(
                             color='rgb(55, 83, 109)'
                                     )
@@ -468,13 +463,16 @@ performance_layout = html.Div([
                             x= servAvail_df['Service'].unique().tolist(),
                             y= servAvail_df['February'].tolist(),
                             name='February',
+                            text= servAvail_df['February'].tolist(),
+                            textposition = 'auto',
                             marker=go.bar.Marker(
-                                color='rgb(26, 118, 255)'
-                                )
+                                color='rgb(26, 118, 255)',
+                                opacity=0.6
+                                ),
                             )
                             ],
                             layout=go.Layout(
-                                
+                                title = 'Severity 1 (High & Critical)',
                                 showlegend=True,
                                 yaxis={'title': '% Availability'},
                                 legend=go.layout.Legend(
@@ -502,6 +500,8 @@ performance_layout = html.Div([
                             x= servRelial_df['Service'].unique().tolist(),
                             y= servRelial_df['January'].tolist(),
                             name='January',
+                            text=servRelial_df['January'].tolist(),
+                            textposition = 'auto',
                             marker=go.bar.Marker(
                             color='rgb(55, 83, 109)'
                                     )
@@ -510,20 +510,23 @@ performance_layout = html.Div([
                             x= servRelial_df['Service'].unique().tolist(),
                             y= servRelial_df['February'].tolist(),
                             name='February',
+                            text=servRelial_df['February'].tolist(),
+                            textposition = 'auto',
                             marker=go.bar.Marker(
-                                color='rgb(26, 118, 255)'
-                                )
+                                color='rgb(26, 118, 255)',
+                                opacity=0.6
+                                ),
                             )
                             ],
                             layout=go.Layout(
-                                
+                                title = 'Severity 1 (High & Critical)',
                                 showlegend=True,
-                                yaxis={'title': 'Hours between Failures'},
+                                yaxis={'title': 'Days between Failures'},
                                 legend=go.layout.Legend(
                                     x=0,
                                     y=1.0
                                 ),
-                                margin=go.layout.Margin(l=60, r=100, t=0, b=100)
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
                             )
                         ),
                         style={'height': 500},
@@ -534,182 +537,113 @@ performance_layout = html.Div([
 
 
 
-            ], className='twelve columns')
+            ], className='row'),
+
+
+         html.Div([
+    
+               html.Div([
+                html.H4('Mean Time to Resolve of Critical Services per Month'),
+                dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                         go.Bar(
+                            x= MTTR_df['Service'].unique().tolist(),
+                            y= MTTR_df['January'].tolist(),
+                            name='January',
+                            text=MTTR_df['January'].tolist(),
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(55, 83, 109)'
+                                    )
+                     ),
+                        go.Bar(
+                            x= MTTR_df['Service'].unique().tolist(),
+                            y= MTTR_df['February'].tolist(),
+                            name='February',
+                            text=MTTR_df['February'].tolist(),
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(26, 118, 255)',
+                                opacity=0.6
+                                )
+                            )
+                            ],
+                            layout=go.Layout(
+                                title = 'Severity 1 (High & Critical)',
+                                showlegend=True,
+                                yaxis={'title': 'MTTR in hours'},
+                                legend=go.layout.Legend(
+                                    x=0,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                        style={'height': 500},
+                        id='MTTR_graph'
+                    )
+               ],
+            ),
+
+              
+       
+            ],
+            className="row"),
 
 ],
 
 )
 
+
 @app.callback(
-    Output('graph44', 'figure'),
-    [Input('dropdown-55', 'value') 
-    ])
+    Output("indicator11", "children"), [Input('dropdown-worst', 'value')]
+)
 
-
-def graph_44():
+def worst_available(input):
     print(input)
+    if input == "January":
+        worst_service = 'FTC (98.0%)'
+    if input == "February":
+        worst_service = '.COM (97.96%)'
 
-    filtered_df = servAvail_df[input].tolist()
+    else:
+        worst_service = 'FTC (98.0%)'
     
-    #filtered_df1 = servAvail_df['February'].tolist()
-
-    critical_services_options= servAvail_df['Service'].unique().tolist()
-
- #   availability=[]
-
- #   for i in critical_services_options :
- #       p=filtered_df[i].unique()
- #       p=p.tolist()
-  #      p=p[0]
-  #      availability.append(p)
-
-       
-    return ({
-        'data': [{'x':critical_services_options, 'y':filtered_df,'type':'scatter', 'name':input}
-    
-        ],
-        'layout': go.Layout(
-            xaxis={'type':'category', 'title': 'Services'},
-            yaxis={'title': '% Availability'},
-            barmode="group",
-            legend={'x': 0, 'y': 1},
-            hovermode='closest',
-            title="Availability for Critical Services in {}".format(input)
-            )
-        }
-        )
-
-
+    return worst_service
 
 
 @app.callback(
-    Output('graph33', 'figure'),
-    [Input('dropdown-33', 'value'),
-     Input('dropdown-44','value')
-    ])
+    Output("indicator22", "children"), [Input('dropdown-worst', 'value')]
+)
 
-def graph_33(input,other):
+def worst_reliable(input):
     print(input)
-    print(other)
-    fil= c_df[(c_df['Domain'] == input) & (c_df['month'] == other)]
+    if input == "January":
+        worst_service = 'Stations Ope. (1day, 9h)'
+    if input == "February":
+        worst_service = 'Stations Ope. (1day, 2h)'
+
+    else:
+        worst_service = 'Stations Ope. (1day, 9h)'
     
- #   prio=filtered_df['Priority'].unique()
-    domain = fil['Domain'].unique()
-
-
-    
-    traces = []
-
-    for i in domain:
-        
-        app = fil[fil['Domain']==i].groupby('Application').size()
-        nb_app = fil[fil['Domain']==i]['Application'].unique()
-
-        traces.append(go.Bar(
-            x=nb_app,
-            y=app,
-            name=i,
-
-        ))
-    return {
-        'data': traces,
-        'layout': go.Layout(
-            xaxis={'type':'category', 'title': input},
-            yaxis={'title': 'Number of Incidents'},
-            barmode="group",
-            legend={'x': 0, 'y': 1},
-            hovermode='closest',
-        )}
-
-
-
+    return worst_service
 
 @app.callback(
-    Output('graph22', 'figure'),
-    [Input('dropdown-11', 'value') 
-    ])
+    Output("indicator33", "children"), [Input('dropdown-worst', 'value')]
+)
 
-def graph_22(input):
-    filtered_df = dff[dff['year'] == input]
-    prio=filtered_df['Priority'].unique()
+def worst_MTTR(input):
+    print(input)
+    if input == "January":
+        worst_service = 'FTC (1 day,3h)'
+    if input == "February":
+        worst_service = '.COM (1day,4h)'
+
+    else:
+        worst_service = 'FTC (1 day,3h)'
     
-    traces = []
-
-    for i in prio:
-        
-        incidents =filtered_df[filtered_df['Priority']==i].groupby('month').size()
-        months=filtered_df[filtered_df['Priority']==i]['month'].unique()
-
-        traces.append(go.Bar(
-            x=months,
-            y=incidents,
-            name=i,
-
-        ))
-    return {
-        'data': traces,
-        'layout': go.Layout(
-            xaxis={'type':'category', 'title': 'Month'},
-            yaxis={'title': 'Number of Incidents'},
-            barmode="group",
-            legend={'x': 0, 'y': 1},
-            hovermode='closest',
-        )}
-
-
-@app.callback(
-    Output('graph11', 'figure'),
-    [Input('dropdown-11', 'value') 
-    ])
-
-def graph_maker11(input1):
-    
-    filtered_df = dff[dff['year'] == input1]
-    
-    prio=filtered_df['Priority'].unique()
-    
-    traces = []
-    
-    for i in prio:
-        
-        incidents =filtered_df[filtered_df['Priority']==i].groupby('CreationDate').size()
-        months=filtered_df[filtered_df['Priority']==i]['month'].unique()
-
-#        days=filtered_df[filtered_df['Priority']==i]['CreationDate'].unique()
-
-        print(months)
-
-        traces.append(go.Scatter(
-#            x=days
-            x=months,
-            y=incidents,
-            text=prio,
-            mode='lines+markers',
-            opacity=0.7,
-            marker={
-                'size': 15,
-                'line': {'width': 0.5, 'color': 'red'}
-            },
-            name= i
-        ))
-
-    return {
-        'data': traces,
-        'layout': go.Layout(
-            xaxis={'type': 'category', 'title': 'Months'},
-            yaxis={'title': 'Incidents'},
-            margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
-            legend={'x': 0, 'y': 1},
-            hovermode='closest'
-        )
-    }
-    
- 
-    
-    
-    
-   
-
+    return worst_service
 
 if __name__ == '__main__':
     app.run_server(debug=True)
