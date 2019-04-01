@@ -255,7 +255,7 @@ general_layout = html.Div([
 
 
     html.Div([
-        html.H6("Indicators of the month:"),
+        html.H6("Figures of the month"),
 
         dcc.Dropdown(
             id='dropdown-1',
@@ -575,12 +575,18 @@ performance_layout = html.Div([
 
 
                 html.Div([
-                html.H6("Indicators of the month:"),
+               
+                html.H6("Worst Perfomance of the Month"),
+
                 dcc.Dropdown(
                 id='dropdown-worst',
                 options=[{'label': 'January', 'value': 'January'},{'label': 'February', 'value': 'February'}],
                 value='January'
                 ),
+
+                ],className='row'),
+
+                html.Div([
 
                 html.Div([ 
                 indicator('blue','Worst Available Service','indicator11'),
@@ -654,18 +660,7 @@ performance_layout = html.Div([
                 dcc.Graph(
                     figure=go.Figure(
                     data=[
-                         go.Bar(
-                            x= servRelial_df['January'].tolist(),
-                            y= servRelial_df['Service'].unique().tolist(),
-                            name='January',
-                            text=servRelial_df['January'].tolist(),
-                            textposition = 'auto',
-                            orientation = 'h',
-                            marker=go.bar.Marker(
-                            color='rgb(179, 94, 255)',
-                            opacity=0.6
-                                    )
-                     ),
+                        
                         go.Bar(
                             y= servRelial_df['Service'].unique().tolist(),
                             x= servRelial_df['February'].tolist(),
@@ -677,7 +672,21 @@ performance_layout = html.Div([
                                 color='rgb(212, 163, 255)',
                                 opacity=0.75
                                 ),
-                            )
+                            ),
+                        
+                        go.Bar(
+                            x= servRelial_df['January'].tolist(),
+                            y= servRelial_df['Service'].unique().tolist(),
+                            name='January',
+                            text=servRelial_df['January'].tolist(),
+                            textposition = 'auto',
+                            orientation = 'h',
+                            marker=go.bar.Marker(
+                            color='rgb(179, 94, 255)',
+                            opacity=0.6
+                                    )
+                        ),
+
                             ],
                             layout=go.Layout(
                                 title = 'Severity 1 High & Critical',
