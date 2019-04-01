@@ -108,8 +108,8 @@ def indicator(color, text, id_value):
     )
 
 
-APP_NAME = 'Iberia Dashboard App'
-APP_URL = 'https://iberia-dashboard.herokuapp.com'
+#APP_NAME = 'Iberia Dashboard App'
+#APP_URL = 'https://iberia-dashboard.herokuapp.com'
 
 
 
@@ -127,17 +127,17 @@ VALID_USERNAME_PASSWORD_PAIRS = [
 
 
 
-auth = dash_auth.PlotlyAuth(
-    app,
-    APP_NAME,
-    'private',
-    APP_URL
-)
-
-#auth = dash_auth.BasicAuth(
+#auth = dash_auth.PlotlyAuth(
 #    app,
-#    VALID_USERNAME_PASSWORD_PAIRS
+#    APP_NAME,
+#    'private',
+#    APP_URL
 #)
+
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
 
 
 app.layout = html.Div([
@@ -809,7 +809,7 @@ def worst_MTTR(input):
 
 
 
-app.scripts.config.serve_locally = True
+#app.scripts.config.serve_locally = True
 
 
 if __name__ == '__main__':
