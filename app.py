@@ -59,6 +59,18 @@ c_months_options=c_df["month"].unique()
 
 
 
+jann = jf_df[jf_df['month']==1]
+jann['Month'] = jann['month'].apply(lambda x:'January')
+jann= jann.reset_index()
+
+
+fevrier = jf_df[jf_df['month']==2]
+fevrier['Month'] = fevrier['month'].apply(lambda x:'February')
+fevrier= fevrier.reset_index()
+
+
+raised_by_month = jann.append(fevrier, ignore_index=True)
+
 
 
 def generate_table(dataframe, max_rows=10):
@@ -96,20 +108,36 @@ def indicator(color, text, id_value):
     )
 
 
+APP_NAME = 'Iberia Dashboard App'
+APP_URL = 'https://iberia-dashboard.herokuapp.com'
+
+
+
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 app.config.suppress_callback_exceptions = True
 
 
 VALID_USERNAME_PASSWORD_PAIRS = [
-    ['Araceli', 'AccessAraceli']
+    ['Araceli', 'AccessAraceli'],
+    ['User1', 'Access1'],
+    ['User2', 'Access2'],
+    ['User3', 'Access3']
 ]
 
 
-auth = dash_auth.BasicAuth(
+
+auth = dash_auth.PlotlyAuth(
     app,
-    VALID_USERNAME_PASSWORD_PAIRS
+    APP_NAME,
+    'private',
+    APP_URL
 )
+
+#auth = dash_auth.BasicAuth(
+#    app,
+#    VALID_USERNAME_PASSWORD_PAIRS
+#)
 
 
 app.layout = html.Div([
@@ -118,9 +146,9 @@ html.Div([
 html.Div([ 
     html.Span("Iberia Dashboard", className='app-title'),
     
-#    html.Div(
-#        html.Img(src=' ',height="100%"),
-#        style={"float":"right","height":"100%"})
+    html.Div(
+        html.Img(src='https://upload.wikimedia.org/wikipedia/commons/5/5e/Logo_iberia_2013.png',height="100%"),
+        style={"float":"right","height":"100%"})
         ],
    
 
@@ -136,7 +164,7 @@ html.Div([
         style={"height":"20","verticalAlign":"middle"},
         children=[
             dcc.Tab(label="General Overview", value="general_tab"),
-            dcc.Tab(label="Critical Services' Performance", value="performance_tab"),
+            dcc.Tab(label="Performance", value="performance_tab"),
         ],
         value ="general_tab"
     )
@@ -185,15 +213,16 @@ def render_content(tab):
 
 def graph_2():
 
-    filtered_df = jf_df[jf_df['year'] == 2018]
-    prio=filtered_df['Priority'].unique()
+  
+    prio=raised_by_month['Priority'].unique()
     
     traces = []
 
     for i in prio:
         
-        incidents =filtered_df[filtered_df['Priority']==i].groupby('month').size()
-        months=filtered_df[filtered_df['Priority']==i]['month'].unique()
+        incidents =raised_by_month[raised_by_month['Priority']==i].groupby('month').size()
+        months=raised_by_month[raised_by_month['Priority']==i]['Month'].unique()
+        
 
         traces.append(go.Bar(
             x=months,
@@ -226,13 +255,15 @@ general_layout = html.Div([
 
 
     html.Div([
+        html.H6("Indicators of the month:"),
+
         dcc.Dropdown(
             id='dropdown-1',
             options=[{'label': 'January', 'value': 'January'},{'label': 'February', 'value': 'February'}],
             value='January'
                 )
 
-    ]),
+    ],className='row'),
     
     html.Div([
         html.Div([ 
@@ -331,7 +362,7 @@ general_layout = html.Div([
 
 
        html.Div([
-                html.H4('Raised/Closed/Backlog per Month'),
+                html.H4("Total Incidents per Status"),
            dcc.Graph(
                     figure=go.Figure(
                     data=[
@@ -360,6 +391,7 @@ general_layout = html.Div([
                             layout=go.Layout(
                                 title = 'All Severities',
                                 showlegend=True,
+                                xaxis={'title':'Status'},
                                 yaxis={'title': 'Number of Incidents'},
                                
                                 legend=go.layout.Legend(
@@ -379,7 +411,7 @@ general_layout = html.Div([
 
 
        html.Div([
-                html.H4('Password Related Incidents per Month'),
+                html.H4('Password Related Incidents'),
            dcc.Graph(
                     figure=go.Figure(
                     data=[
@@ -390,10 +422,10 @@ general_layout = html.Div([
                             text=[3918,6117],
                             textposition = 'auto',
                             marker=dict(
-                                color='rgb(26, 118, 255)',
+                                color='rgb(55, 83, 109)',
                             
                             ),
-                            opacity=0.6
+                            
                      ),
                         go.Bar(
                             x= ['Password Related','Non-Password Related'],
@@ -402,7 +434,7 @@ general_layout = html.Div([
                             text= [3279,5557],
                             textposition = 'auto',
                             marker=dict(
-                                color='rgb(255, 150, 38)',
+                                color='rgb(26, 118, 255)',
                             
                             ),
                             opacity=0.6
@@ -543,6 +575,7 @@ performance_layout = html.Div([
 
 
                 html.Div([
+                html.H6("Indicators of the month:"),
                 dcc.Dropdown(
                 id='dropdown-worst',
                 options=[{'label': 'January', 'value': 'January'},{'label': 'February', 'value': 'February'}],
@@ -570,7 +603,7 @@ performance_layout = html.Div([
 
 
             html.Div([
-                html.H4('Availability of Critical Services per Month'),
+                html.H4('Availability per Critical Services'),
            dcc.Graph(
                     figure=go.Figure(
                     data=[
@@ -581,7 +614,7 @@ performance_layout = html.Div([
                             text=servAvail_df['January'].tolist(),
                             textposition = 'auto',
                             marker=go.bar.Marker(
-                            color='rgb(55, 83, 109)'
+                            color='rgb(29, 104, 57)'
                                     )
                      ),
                         go.Bar(
@@ -591,13 +624,13 @@ performance_layout = html.Div([
                             text= servAvail_df['February'].tolist(),
                             textposition = 'auto',
                             marker=go.bar.Marker(
-                                color='rgb(26, 118, 255)',
+                                color='rgb(50, 171, 96)',
                                 opacity=0.6
                                 ),
                             )
                             ],
                             layout=go.Layout(
-                                title = 'Severity 1 (High & Critical)',
+                                title = 'Severity 1 High & Critical',
                                 showlegend=True,
                                 yaxis={'title': '% Availability'},
                                 legend=go.layout.Legend(
@@ -616,7 +649,7 @@ performance_layout = html.Div([
             
 
             html.Div([
-                html.H4('Reliability of Critical Services per Month'),
+                html.H4('Reliability per Critical Services'),
 
                 dcc.Graph(
                     figure=go.Figure(
@@ -647,7 +680,7 @@ performance_layout = html.Div([
                             )
                             ],
                             layout=go.Layout(
-                                title = 'Severity 1 (High & Critical)',
+                                title = 'Severity 1 High & Critical',
                                 showlegend=True,
                                 xaxis={'title': 'Days between Failures'},
                                 legend=go.layout.Legend(
@@ -671,7 +704,7 @@ performance_layout = html.Div([
          html.Div([
     
                html.Div([
-                html.H4('Mean Time to Resolve of Critical Services per Month'),
+                html.H4('Mean Time to Resolve per Critical Services'),
                 dcc.Graph(
                     figure=go.Figure(
                     data=[
@@ -682,7 +715,8 @@ performance_layout = html.Div([
                             text=MTTR_df['January'].tolist(),
                             textposition = 'auto',
                             marker=go.bar.Marker(
-                            color='rgb(130, 157, 237)'
+                            color='orange',
+                                    
                                     )
                      ),
                         go.Bar(
@@ -692,13 +726,13 @@ performance_layout = html.Div([
                             text=MTTR_df['February'].tolist(),
                             textposition = 'auto',
                             marker=go.bar.Marker(
-                                color='rgb(255, 150, 38)',
-                                opacity=0.6
+                                color='orange',
+                                opacity=0.60
                                 )
                             )
                             ],
                             layout=go.Layout(
-                                title = 'Severity 1 (High & Critical)',
+                                title = 'Severity High & Critical',
                                 showlegend=True,
                                 yaxis={'title': 'MTTR in hours'},
                                 legend=go.layout.Legend(
@@ -772,6 +806,10 @@ def worst_MTTR(input):
         worst_service = 'FTC (1 day,3h)'
     
     return worst_service
+
+
+
+app.scripts.config.serve_locally = True
 
 
 if __name__ == '__main__':
