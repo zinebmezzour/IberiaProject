@@ -662,7 +662,7 @@ performance_layout = html.Div([
                             textposition = 'auto',
                             orientation = 'h',
                             marker=go.bar.Marker(
-                            color='rgb(55, 83, 109)',
+                            color='rgb(179, 94, 255)',
                             opacity=0.6
                                     )
                      ),
@@ -674,8 +674,8 @@ performance_layout = html.Div([
                             textposition = 'auto',
                             orientation = 'h',
                             marker=go.bar.Marker(
-                                color='rgb(26, 118, 255)',
-                                opacity=0.6
+                                color='rgb(212, 163, 255)',
+                                opacity=0.75
                                 ),
                             )
                             ],
@@ -715,7 +715,7 @@ performance_layout = html.Div([
                             text=MTTR_df['January'].tolist(),
                             textposition = 'auto',
                             marker=go.bar.Marker(
-                            color='orange',
+                            color='rgb(255, 149, 28)',
                                     
                                     )
                      ),
@@ -726,8 +726,8 @@ performance_layout = html.Div([
                             text=MTTR_df['February'].tolist(),
                             textposition = 'auto',
                             marker=go.bar.Marker(
-                                color='orange',
-                                opacity=0.60
+                                color='rgb(255, 178, 91)',
+                                opacity=0.75
                                 )
                             )
                             ],
