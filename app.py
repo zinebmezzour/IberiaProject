@@ -421,29 +421,32 @@ general_layout = html.Div([
            dcc.Graph(
                     figure=go.Figure(
                     data=[
-                         dict(
-                            x= ['January','February'],
-                            y= [6117,5557],
-                            hoverinfo='x+y',
-                            mode='lines',
-                            name='Non-Password Related',
-                    
-                            stackgroup='one',
-                            line=dict(width=0.5,
-                            color='red')
-                            ,
+                         go.Bar(
+                            x= ['Password Related','Non-Password Related'],
+                            y= [3918,6117],
+                            name='January',
+                            text=[3918,6117],
+                            textposition = 'auto',
+                            marker=dict(
+                                color='rgb(55, 83, 109)',
+                            
+                            ),
                             
                      ),
-                        dict(
-                            x= ['January','February'],
-                            y= [3918,3279],
-                            name='Password Related',
-                            hoverinfo='x+y',
-                        
-                            mode='lines',
-                            line=dict(width=0.5,
-                            color='rgb(255, 149, 28)'),
-                            stackgroup='one'
+                        go.Bar(
+                            x= ['Password Related','Non-Password Related'],
+                            y= [3279,5557],
+                            name='February',
+                            text= [3279,5557],
+                            textposition = 'auto',
+                            marker=dict(
+                                color='rgb(26, 118, 255)',
+                            
+                            ),
+                            opacity=0.6
+
+
+                           
                             )
                             ],
                             layout=go.Layout(
@@ -476,8 +479,11 @@ general_layout = html.Div([
                 dcc.Graph(
                     figure=go.Figure(
                     data=[
-                    
-                        go.Scatter(
+                        
+                        
+                        
+                        go.Bar(
+                            y= [3, 58, 35, 3, 280, 41,637,0,0, 20, 23, 19, 1, 30, 12, 13, 15, 69, 7, 13, 12, 11, 18, 3, 15, 96, 36,0, 6, 28],
                             x= ['ABC', 'AGP', 'ALC',
                                 'BADAJOZ', 'BCN', 'BIO','MAD',
                                 'EAS', 'GRO', 'GRX', 'IBZ',
@@ -486,16 +492,16 @@ general_layout = html.Div([
                                 'REU', 'SCQ', 'SDR', 'SPC',
                                 'SVQ', 'TFN', 'TFS', 'VGO',
                                 'VIT', 'VLC', 'XRY'],
-                            y= [3, 58, 35, 3, 280, 41,637,0,0, 20, 23, 19, 1, 30, 12, 13, 15, 69, 7, 13, 12, 11, 18, 3, 15, 96, 36,0, 6, 28],
                             name='January',
-                            fill='tozeroy',
-                            mode='lines',
-                            line=dict(width=0.5,
-                            color='green')
-                            ,
+                            text=[3, 58, 35, 3, 280, 41,637,0,0, 20, 23, 19, 1, 30, 12, 13, 15, 69, 7, 13, 12, 11, 18, 3, 15, 96, 36,0, 6, 28],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(55, 83, 109)',
+                            opacity=0.6
+                                    )
                         ),
 
-                        go.Scatter(
+                        go.Bar(
                             x= ['ABC', 'AGP', 'ALC',
                                 'BADAJOZ', 'BCN', 'BIO','MAD',
                                 'EAS', 'GRO', 'GRX', 'IBZ',
@@ -506,17 +512,19 @@ general_layout = html.Div([
                                 'VIT', 'VLC', 'XRY'],
                             y= [2,32,31,3,200,45,570,7,4,8,32,13,4,28,17,3,12,64,4,8,16,7,11,6,8,46,23,4,4,20],
                             name='February',
-                            fill='tozeroy',
-                            mode='lines',
-                            line=dict(width=0.5,
-                            color='rgb(26, 118, 255)'),
-                            
+                            text=[2,32,31,3,200,45,570,7,4,8,32,13,4,28,17,3,12,64,4,8,16,7,11,6,8,46,23,4,4,20],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(26, 118, 255)',
+                                opacity=0.60
+                                ),
                             ),
-                          ],
+
+                            ],
                             layout=go.Layout(
                                 
                                 showlegend=True,
-                                xaxis={'title':'Airports'},
+                                
                                 yaxis={'title': 'Number of Incidents'},
                                 legend=go.layout.Legend(
                                     x=1.0,
@@ -599,6 +607,42 @@ def severity1(input):
 
 
 
+@app.callback(
+    Output('graph3', 'figure'),
+    [Input('dropdown-3', 'value'),
+     Input('dropdown-4','value')
+    ])
+
+def graph_3(input,other):
+    print(input)
+    print(other)
+    fil= c_df[(c_df['Domain'] == input) & (c_df['month'] == other)]
+    
+ #   prio=filtered_df['Priority'].unique()
+    domain = fil['Domain'].unique()
+
+    traces = []
+
+    for i in domain:
+        
+        app = fil[fil['Domain']==i].groupby('Application').size()
+        nb_app = fil[fil['Domain']==i]['Application'].unique()
+
+        traces.append(go.Bar(
+            x=nb_app,
+            y=app,
+            name=i,
+
+        ))
+    return {
+        'data': traces,
+        'layout': go.Layout(
+            xaxis={'type':'category', 'title': input},
+            yaxis={'title': 'Number of Incidents'},
+            barmode="group",
+            legend={'x': 1, 'y': 1},
+            hovermode='closest',
+        )}
 
 
 
@@ -698,8 +742,8 @@ performance_layout = html.Div([
                     data=[
                         
                         go.Bar(
-                            x= servRelial_df['February'].tolist(),
                             y= servRelial_df['Service'].unique().tolist(),
+                            x= servRelial_df['February'].tolist(),
                             name='February',
                             text=servRelial_df['February'].tolist(),
                             textposition = 'auto',
@@ -753,22 +797,27 @@ performance_layout = html.Div([
                 dcc.Graph(
                     figure=go.Figure(
                     data=[
-                         go.Scatter(
+                         go.Bar(
                             x= MTTR_df['Service'].unique().tolist(),
                             y= MTTR_df['January'].tolist(),
                             name='January',
-                            fill='tozeroy',
-                            mode= 'none',
-                            
-                            
+                            text=MTTR_df['January'].tolist(),
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(255, 149, 28)',
+                                    
+                                    )
                      ),
-                        go.Scatter(
+                        go.Bar(
                             x= MTTR_df['Service'].unique().tolist(),
                             y= MTTR_df['February'].tolist(),
                             name='February',
-                            fill='tozeroy',
-                            mode= 'none'
-                            
+                            text=MTTR_df['February'].tolist(),
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(255, 178, 91)',
+                                opacity=0.75
+                                )
                             )
                             ],
                             layout=go.Layout(
@@ -1072,28 +1121,27 @@ extra_layout =html.Div([
                         
                         
                         
-                        go.Scatter(
+                        go.Bar(
                             y= [2.3,6.1],
                             x= ['Application Tower', 'Server Tower'],
                             name='January',
-                            fill='tozeroy',
-                            mode='lines',
-                            
-                            line=dict(width=0.5,
+                            text=[2.3,6.1],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
                             color='rgb(255, 149, 28)',
+                            opacity=1
                                     )
                         ),
 
-                        go.Scatter(
+                        go.Bar(
                             x= ['Application Tower', 'Delivery','Network Tower','Service Ops Tower'],
                             y= [3.3,2.8,2.5,5.9],
                             name='February',
-                            fill='tozeroy',
-                            mode='lines',
-                            
-                            line=dict(width=0.5,
+                            text=[3.3,2.8,2.5,5.9],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
                                 color='rgb(255, 178, 91)',
-                                
+                                opacity=0.75
                                 ),
                             ),
 
