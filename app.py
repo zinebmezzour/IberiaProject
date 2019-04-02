@@ -427,8 +427,7 @@ general_layout = html.Div([
                             hoverinfo='x+y',
                             mode='lines',
                             name='Non-Password Related',
-                            text=[6117,5557],
-                            textposition='top center',
+                    
                             stackgroup='one',
                             line=dict(width=0.5,
                             color='red')
@@ -440,8 +439,7 @@ general_layout = html.Div([
                             y= [3918,3279],
                             name='Password Related',
                             hoverinfo='x+y',
-                            text=[3918,3279],
-                            textposition='top center',
+                        
                             mode='lines',
                             line=dict(width=0.5,
                             color='rgb(255, 149, 28)'),
@@ -805,7 +803,6 @@ performance_layout = html.Div([
                             x= MTTR_df['Service'].unique().tolist(),
                             y= MTTR_df['February'].tolist(),
                             name='February',
-                            
                             fill='tozeroy',
                             mode= 'none'
                             
@@ -1118,8 +1115,7 @@ extra_layout =html.Div([
                             name='January',
                             fill='tozeroy',
                             mode='lines',
-                            text=[2.3,6.1],
-                            textposition='top center',
+                            
                             line=dict(width=0.5,
                             color='rgb(255, 149, 28)',
                                     )
@@ -1131,9 +1127,8 @@ extra_layout =html.Div([
                             name='February',
                             fill='tozeroy',
                             mode='lines',
-                            text=[3.3,2.8,2.5,5.9],
-                            textposition='top center',
-                             line=dict(width=0.5,
+                            
+                            line=dict(width=0.5,
                                 color='rgb(255, 178, 91)',
                                 
                                 ),
