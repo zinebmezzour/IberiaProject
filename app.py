@@ -29,6 +29,7 @@ jf_df=pd.read_sql_query('select * from "janfebraised";', conn)
 servAvail_df=pd.read_sql_query('select * from "ServAvailJF";', conn)
 servRelial_df=pd.read_sql_query('select * from "ServReliabilityJF";', conn)
 MTTR_df=pd.read_sql_query('select * from "MTTR_per_Service";', conn)
+MTTR_tower_df=pd.read_sql_query('select * from "MTTR_Tower_1";', conn)
 
 
 
@@ -164,7 +165,8 @@ html.Div([
         style={"height":"20","verticalAlign":"middle"},
         children=[
             dcc.Tab(label="General Overview", value="general_tab"),
-            dcc.Tab(label="Performance", value="performance_tab"),
+            dcc.Tab(label="Critical Services", value="performance_tab"),
+            dcc.Tab(label="Critical Incidents", value="extra_tab"),
         ],
         value ="general_tab"
     )
@@ -207,6 +209,8 @@ def render_content(tab):
         return general_layout
     elif tab == "performance_tab":
        return performance_layout
+    elif tab == "extra_tab":
+       return extra_layout
     else:
         return general_layout
 
@@ -254,28 +258,30 @@ def graph_2():
 general_layout = html.Div([
 
 
+    
+        html.H6("Monthly Figures"),
     html.Div([
-        html.H6("Figures of the month"),
-
+        html.Div([
         dcc.Dropdown(
             id='dropdown-1',
             options=[{'label': 'January', 'value': 'January'},{'label': 'February', 'value': 'February'}],
             value='January'
                 )
+        ],className='three columns')
 
     ],className='row'),
     
     html.Div([
         html.Div([ 
-        indicator('blue','Total Number of Incidences Raised','indicator1'),
+        indicator('blue','Incidents Raised','indicator1'),
         ]),
 
         html.Div([ 
-        indicator('blue','Total Number of Incidences in Critical Services','indicator2'),
+        indicator('blue','Critical Services Incidents','indicator2'),
         ]),
         
         html.Div([ 
-        indicator('blue','Total Number of Severity 1','indicator3'),
+        indicator('blue','Critical Incidents (S1)','indicator3'),
         ]),
 
 
@@ -301,7 +307,7 @@ general_layout = html.Div([
             ], className='six columns'),
 
             html.Div([
-                html.H4('Total Incidents Raised per Critical Services'),
+                html.H4('Total Incidents Raised per Critical Service'),
 
 
                 dcc.Graph(
@@ -462,16 +468,90 @@ general_layout = html.Div([
             className='six columns'),
 
 
+            ], className='row'),
 
 
+             html.Div([
+
+        html.Div([
+                html.H4('Incidents per Airport'),
+
+                dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                        
+                        
+                        
+                        go.Bar(
+                            y= [3, 58, 35, 3, 280, 41,637,0,0, 20, 23, 19, 1, 30, 12, 13, 15, 69, 7, 13, 12, 11, 18, 3, 15, 96, 36,0, 6, 28],
+                            x= ['ABC', 'AGP', 'ALC',
+                                'BADAJOZ', 'BCN', 'BIO','MAD',
+                                'EAS', 'GRO', 'GRX', 'IBZ',
+                                'LCG', 'LEN', 'LPA', 'MAH',
+                                'MLN', 'OVD', 'PMI', 'PNA',
+                                'REU', 'SCQ', 'SDR', 'SPC',
+                                'SVQ', 'TFN', 'TFS', 'VGO',
+                                'VIT', 'VLC', 'XRY'],
+                            name='January',
+                            text=[3, 58, 35, 3, 280, 41,637,0,0, 20, 23, 19, 1, 30, 12, 13, 15, 69, 7, 13, 12, 11, 18, 3, 15, 96, 36,0, 6, 28],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(55, 83, 109)',
+                            opacity=0.6
+                                    )
+                        ),
+
+                        go.Bar(
+                            x= ['ABC', 'AGP', 'ALC',
+                                'BADAJOZ', 'BCN', 'BIO','MAD',
+                                'EAS', 'GRO', 'GRX', 'IBZ',
+                                'LCG', 'LEN', 'LPA', 'MAH',
+                                'MLN', 'OVD', 'PMI', 'PNA',
+                                'REU', 'SCQ', 'SDR', 'SPC',
+                                'SVQ', 'TFN', 'TFS', 'VGO',
+                                'VIT', 'VLC', 'XRY'],
+                            y= [2,32,31,3,200,45,570,7,4,8,32,13,4,28,17,3,12,64,4,8,16,7,11,6,8,46,23,4,4,20],
+                            name='February',
+                            text=[2,32,31,3,200,45,570,7,4,8,32,13,4,28,17,3,12,64,4,8,16,7,11,6,8,46,23,4,4,20],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(26, 118, 255)',
+                                opacity=0.60
+                                ),
+                            ),
+
+                            ],
+                            layout=go.Layout(
+                                
+                                showlegend=True,
+                                
+                                yaxis={'title': 'Number of Incidents'},
+                                legend=go.layout.Legend(
+                                    x=1.0,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                        style={'height': 500},
+                        id='airport_graph'
+                    )
+               ],
+            className='twelve columns'),
+
+    
 
 
-
-            ], className='row') 
+    ],className='row'),
+ 
 
 ],
 className= 'twelve columns'
 ),
+
+
+
+
 
 ])
 
@@ -541,8 +621,6 @@ def graph_3(input,other):
  #   prio=filtered_df['Priority'].unique()
     domain = fil['Domain'].unique()
 
-
-    
     traces = []
 
     for i in domain:
@@ -576,15 +654,17 @@ performance_layout = html.Div([
 
                 html.Div([
                
-                html.H6("Worst Perfomance of the Month"),
-
+                html.H6("Worst Perfomance of the Month"),]),
+                html.Div([
+                html.Div([
                 dcc.Dropdown(
                 id='dropdown-worst',
                 options=[{'label': 'January', 'value': 'January'},{'label': 'February', 'value': 'February'}],
                 value='January'
                 ),
 
-                ],className='row'),
+                ],className='three columns'),
+                ], className='row'),
 
                 html.Div([
 
@@ -636,7 +716,7 @@ performance_layout = html.Div([
                             )
                             ],
                             layout=go.Layout(
-                                title = 'Severity 1 High & Critical',
+                                title = 'Severity High & Critical',
                                 showlegend=True,
                                 yaxis={'title': '% Availability'},
                                 legend=go.layout.Legend(
@@ -669,7 +749,7 @@ performance_layout = html.Div([
                             textposition = 'auto',
                             orientation = 'h',
                             marker=go.bar.Marker(
-                                color='rgb(212, 163, 255)',
+                                color='rgb(255, 117, 117)',
                                 opacity=0.75
                                 ),
                             ),
@@ -682,14 +762,14 @@ performance_layout = html.Div([
                             textposition = 'auto',
                             orientation = 'h',
                             marker=go.bar.Marker(
-                            color='rgb(179, 94, 255)',
-                            opacity=0.6
+                            color='rgb(226, 74, 51)',
+                            opacity=0.75
                                     )
                         ),
 
                             ],
                             layout=go.Layout(
-                                title = 'Severity 1 High & Critical',
+                                title = 'Severity High & Critical',
                                 showlegend=True,
                                 xaxis={'title': 'Days between Failures'},
                                 legend=go.layout.Legend(
@@ -713,7 +793,7 @@ performance_layout = html.Div([
          html.Div([
     
                html.Div([
-                html.H4('Mean Time to Resolve per Critical Services'),
+                html.H4('Mean Time to Resolve per Critical Service'),
                 dcc.Graph(
                     figure=go.Figure(
                     data=[
@@ -819,6 +899,329 @@ def worst_MTTR(input):
 
 
 #app.scripts.config.serve_locally = True
+    
+
+extra_layout =html.Div([
+
+        html.Div([      
+        html.H6("Worst Performance of the Month"),
+        ]),
+        html.Div([      
+
+        html.Div([
+                dcc.Dropdown(
+                id='dropdown-worst2',
+                options=[{'label': 'January', 'value': 'January'},{'label': 'February', 'value': 'February'}],
+                value='January'
+                ),
+                ],className='three columns'),
+
+        ],className='row'),       
+
+                html.Div([
+
+                html.Div([ 
+                indicator('blue','Most Critical Incident Type','indicator111'),
+                ]),
+
+                html.Div([ 
+                indicator('blue','Most Affected App','indicator222'),
+                ]),
+                
+                html.Div([ 
+                indicator('blue','Worst Tower Group MTTR','indicator333'),
+                ]),
+
+
+            ], className='row'),
+
+
+
+    html.Div([
+
+        html.Div([
+                html.H4('Critical Incidents per Type'),
+
+                dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                    
+                        go.Bar(
+                            y= [0, 0, 0, 1, 9],
+                            x= ['ACCESS FAILURE', 'COMMUNICATIONS FAILURE', 'HARDWARE FAILURE','DATA ISSUE', 'SOFTWARE FAILURE'],
+                            name='January',
+                            text=[0, 0, 0, 1, 9],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(226, 74, 51)',
+                            opacity=0.75
+                                    )
+                        ),
+
+                        go.Bar(
+                            x= ['ACCESS FAILURE', 'COMMUNICATIONS FAILURE', 'HARDWARE FAILURE','DATA ISSUE', 'SOFTWARE FAILURE'],
+                            y= [3, 1, 1, 0, 13],
+                            name='February',
+                            text=[3, 1, 1, 0, 13],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(255, 117, 117)',
+                                opacity=0.75
+                                ),
+                            ),
+
+                            ],
+                            layout=go.Layout(
+                                title = 'Severity Critical',
+                                showlegend=True,
+                                
+                                yaxis={'title': 'Number of Incidents'},
+                                legend=go.layout.Legend(
+                                    x=1.0,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                        style={'height': 500},
+                        id='severity1_graph'
+                    )
+               ],
+            className='six columns'),
+
+
+
+    html.Div([
+                html.H4('Applications affected by Critical Incidents'),
+
+                dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                        
+                        
+                        
+                        go.Bar(
+                            y= [1, 1, 2, 1, 1, 1, 1, 1, 1],
+                            x= ['Unknown', 'FENIX', 'GAUDI REALTIME', 'GEROMA WEB',
+                                'PEOPLESOFT, ADMINISTRACIÓN DE PERSONAL', 'PORTAL IAG CARGO .COM',
+                                'SABRE FMP', 'SERVICIO SARA VALIDACIÓN RESIDENTES', 'SGAR DE CARGA'],
+                            name='January',
+                            text=[1, 1, 2, 1, 1, 1, 1, 1, 1],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(226, 74, 51)',
+                            opacity=0.6
+                                    )
+                        ),
+
+                        go.Bar(
+                            x= ['Unknown', 'AVCD', 'EVIL', 'GAUDI REALTIME',
+                            'IBERIA PLUS PLATAFORMA+STORE',
+                            'IBERIA.COM PORTAL + PPG IB.COM', 'IBERIA.COM SERVICES PLATFORM - IBIS',
+                            'OIM - IDM', 'PORTAL IAG CARGO .COM', 'SABRE FMP',
+                            'TRYP ReT IB@S'],
+                            y= [4, 1, 3, 2, 1, 2, 1, 1, 1, 1, 1],
+                            name='February',
+                            text=[4, 1, 3, 2, 1, 2, 1, 1, 1, 1, 1],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(26, 118, 255)',
+                                opacity=0.60
+                                ),
+                            ),
+
+                            ],
+                            layout=go.Layout(
+                                title = 'Severity Critical',
+                                showlegend=True,
+                                
+                                yaxis={'title': 'Frequence'},
+                                legend=go.layout.Legend(
+                                    x=1.0,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                        style={'height': 500},
+                        id='app_graph'
+                    )
+               ],
+            className='six columns')        
+
+
+    
+
+
+    ],className='row'),
+
+
+    html.Div([
+
+        html.Div([
+                html.H4('Number of Critical Incidents Per Tower Group'),
+
+                dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                        
+                        
+                        
+                        go.Bar(
+                            y= [7, 3],
+                            x= ['Application Tower', 'Server Tower'],
+                            name='January',
+                            text=[7, 3],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(255, 149, 28)',
+                            opacity=1
+                                    )
+                        ),
+
+                        go.Bar(
+                            x= ['Application Tower', 'Delivery', 'Network Tower', 'Service Ops Tower'],
+                            y= [13,1,1,3],
+                            name='February',
+                            text=[13,1,1,3],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(255, 178, 91)',
+                                opacity=0.75
+                                ),
+                            ),
+
+                            ],
+                            layout=go.Layout(
+                                title = 'Severity Critical',
+                                showlegend=True,
+                                
+                                yaxis={'title': 'Total Number of Incidents'},
+                                legend=go.layout.Legend(
+                                    x=1.0,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                        style={'height': 500},
+                        id='number_tower_graph'
+                    )
+               ],
+            className='six columns'),
+
+
+
+        html.Div([
+                html.H4('MTTR per Tower Group'),
+
+                dcc.Graph(
+                    figure=go.Figure(
+                    data=[
+                        
+                        
+                        
+                        go.Bar(
+                            y= [2.3,6.1],
+                            x= ['Application Tower', 'Server Tower'],
+                            name='January',
+                            text=[2.3,6.1],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                            color='rgb(255, 149, 28)',
+                            opacity=1
+                                    )
+                        ),
+
+                        go.Bar(
+                            x= ['Application Tower', 'Delivery','Network Tower','Service Ops Tower'],
+                            y= [3.3,2.8,2.5,5.9],
+                            name='February',
+                            text=[3.3,2.8,2.5,5.9],
+                            textposition = 'auto',
+                            marker=go.bar.Marker(
+                                color='rgb(255, 178, 91)',
+                                opacity=0.75
+                                ),
+                            ),
+
+                            ],
+                            layout=go.Layout(
+                                title = 'Severity Critical',
+                                showlegend=True,
+                                
+                                yaxis={'title': 'MTTR in Hour'},
+                                legend=go.layout.Legend(
+                                    x=1.0,
+                                    y=1.0
+                                ),
+                                margin=go.layout.Margin(l=60, r=40, t=40, b=100)
+                            )
+                        ),
+                        style={'height': 500},
+                        id='tower_graph'
+                    )
+               ],
+            className='six columns')
+
+
+    ],className='row')
+
+
+])
+
+
+
+@app.callback(
+    Output("indicator111", "children"), [Input('dropdown-worst2', 'value')]
+)
+
+def critical(input):
+    print(input)
+    if input == "January":
+        worst_service = 'Software Failure (9)'
+    if input == "February":
+        worst_service = 'Software Failure'
+
+    else:
+        worst_service = 'Software Failure'
+    
+    return worst_service
+
+
+@app.callback(
+    Output("indicator222", "children"), [Input('dropdown-worst2', 'value')]
+)
+
+def app_worst(input):
+    
+    if input == "January":
+        worst_service = 'Gaudi Realtime'
+    if input == "February":
+        worst_service = 'Unknown'
+
+    else:
+        worst_service = 'Gaudi Realtime'
+    
+    return worst_service
+
+@app.callback(
+    Output("indicator333", "children"), [Input('dropdown-worst2', 'value')]
+)
+
+def worst_tower_MTTR(input):
+    print(input)
+    if input == "January":
+        worst_service = 'Server Tower (6h06)'
+    if input == "February":
+        worst_service = 'Service Ops Tower(5h54)'
+
+    else:
+        worst_service = 'Server Tower (6h06)'
+    
+    return worst_service
+
+
 
 
 if __name__ == '__main__':
