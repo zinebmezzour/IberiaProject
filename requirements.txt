@@ -32,4 +32,5 @@ Werkzeug==0.14.1
 wincertstore==0.2
 psycopg2==2.7.7
 dash-auth==1.2.0
+plotly==3.3.0
 
