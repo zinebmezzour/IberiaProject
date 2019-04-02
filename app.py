@@ -478,7 +478,6 @@ general_layout = html.Div([
                     data=[
                     
                         go.Scatter(
-                            y= [3, 58, 35, 3, 280, 41,637,0,0, 20, 23, 19, 1, 30, 12, 13, 15, 69, 7, 13, 12, 11, 18, 3, 15, 96, 36,0, 6, 28],
                             x= ['ABC', 'AGP', 'ALC',
                                 'BADAJOZ', 'BCN', 'BIO','MAD',
                                 'EAS', 'GRO', 'GRX', 'IBZ',
@@ -487,7 +486,7 @@ general_layout = html.Div([
                                 'REU', 'SCQ', 'SDR', 'SPC',
                                 'SVQ', 'TFN', 'TFS', 'VGO',
                                 'VIT', 'VLC', 'XRY'],
-                            
+                            y= [3, 58, 35, 3, 280, 41,637,0,0, 20, 23, 19, 1, 30, 12, 13, 15, 69, 7, 13, 12, 11, 18, 3, 15, 96, 36,0, 6, 28],
                             name='January',
                             fill='tozeroy',
                             mode='lines',
@@ -600,42 +599,6 @@ def severity1(input):
 
 
 
-@app.callback(
-    Output('graph3', 'figure'),
-    [Input('dropdown-3', 'value'),
-     Input('dropdown-4','value')
-    ])
-
-def graph_3(input,other):
-    print(input)
-    print(other)
-    fil= c_df[(c_df['Domain'] == input) & (c_df['month'] == other)]
-    
- #   prio=filtered_df['Priority'].unique()
-    domain = fil['Domain'].unique()
-
-    traces = []
-
-    for i in domain:
-        
-        app = fil[fil['Domain']==i].groupby('Application').size()
-        nb_app = fil[fil['Domain']==i]['Application'].unique()
-
-        traces.append(go.Bar(
-            x=nb_app,
-            y=app,
-            name=i,
-
-        ))
-    return {
-        'data': traces,
-        'layout': go.Layout(
-            xaxis={'type':'category', 'title': input},
-            yaxis={'title': 'Number of Incidents'},
-            barmode="group",
-            legend={'x': 1, 'y': 1},
-            hovermode='closest',
-        )}
 
 
 
@@ -735,8 +698,8 @@ performance_layout = html.Div([
                     data=[
                         
                         go.Bar(
-                            y= servRelial_df['Service'].unique().tolist(),
                             x= servRelial_df['February'].tolist(),
+                            y= servRelial_df['Service'].unique().tolist(),
                             name='February',
                             text=servRelial_df['February'].tolist(),
                             textposition = 'auto',
